@@ -1,206 +1,12 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { ClipboardCopyIcon } from "lucide-react";
-import React, { useState } from "react";
-import { ClockOptions } from "react-custom-clock";
-
-const DEFAULT_OPTIONS = {
-  size: 400,
-  face: {
-    background: "white",
-    show: true,
-    padding: 0,
-    ticks: {
-      show: true,
-      regular: {
-        show: true,
-        height: 20,
-        width: 4,
-        background: "rgb(200 200 200)",
-        radius: 2,
-      },
-      secondary: {
-        show: true,
-        height: 28,
-        width: 4,
-        background: "black",
-        radius: 2,
-      },
-      primary: {
-        show: true,
-        height: 36,
-        width: 8,
-        background: "rgb(0 122 255)",
-        radius: 3,
-      },
-    },
-    counts: {
-      show: true,
-      secondary: {
-        show: true,
-        size: 20,
-        color: "rgb(100 100 100)",
-        background: "rgb(0 122 255 / 0)",
-        gap: 5,
-      },
-      primary: {
-        show: true,
-        size: 25,
-        color: "black",
-        background: "rgb(0 122 255 / 0.08)",
-        gap: 5,
-      },
-    },
-  },
-  interface: {
-    show: true,
-    dynamic: true,
-    transition: 300,
-    pivot: {
-      show: true,
-      size: 20,
-      background: "rgb(0 0 0)",
-    },
-    hourHand: {
-      show: true,
-      front: {
-        show: true,
-        background: "black",
-        radius: 4,
-        width: 12,
-        height: 80,
-        alignment: "CENTER",
-      },
-      frontBase: {
-        show: true,
-        background: "grey",
-        radius: 2,
-        width: 4,
-        height: 120,
-      },
-      back: {
-        show: true,
-        background: "grey",
-        radius: 2,
-        width: 4,
-        height: 24,
-      },
-    },
-    minuteHand: {
-      show: true,
-      front: {
-        show: true,
-        background: "black",
-        radius: 4,
-        width: 8,
-        height: 120,
-        alignment: "TICK",
-      },
-      frontBase: {
-        show: true,
-        background: "grey",
-        radius: 2,
-        width: 4,
-        height: 150,
-      },
-      back: {
-        show: true,
-        background: "grey",
-        radius: 2,
-        width: 4,
-        height: 30,
-      },
-    },
-    secondHand: {
-      show: true,
-      front: {
-        show: true,
-        background: "red",
-        radius: 4,
-        width: 6,
-        height: 120,
-        alignment: "CENTER",
-      },
-      frontBase: {
-        show: true,
-        background: "orange",
-        radius: 2,
-        width: 4,
-        height: 150,
-      },
-      back: {
-        show: true,
-        background: "grey",
-        radius: 2,
-        width: 4,
-        height: 30,
-      },
-    },
-  },
-} satisfies ClockOptions;
-
-type OptionData = {
-  key: string;
-  type:
-    | "boolean"
-    | "number"
-    | "color"
-    | "undefined"
-    | "show"
-    | "string"
-    | "object";
-  currentValue: any;
-  defaultValue: any;
-};
-
-const getOptionsData = (defaultObj: any, edittedObj: object | undefined) => {
-  const optionsData: OptionData[] = [];
-  if ("show" in defaultObj) {
-    optionsData.push({
-      key: "show",
-      type: "show",
-      currentValue:
-        edittedObj !== undefined && "show" in edittedObj
-          ? edittedObj.show
-          : undefined,
-      defaultValue: defaultObj.show,
-    });
-  }
-  for (const key in defaultObj) {
-    if (key === "show") continue;
-    const typedKey = key as keyof typeof defaultObj as string;
-    const keyTypeRaw = typeof defaultObj[typedKey];
-    let keyType: OptionData["type"] | null = null;
-    if (["number", "string", "object"].includes(keyTypeRaw)) {
-      keyType = keyTypeRaw as any;
-    }
-    if (
-      typedKey.toLowerCase().includes("background") ||
-      typedKey.toLowerCase().includes("color")
-    ) {
-      keyType = "color";
-    }
-    const currentValue =
-      edittedObj === undefined
-        ? undefined
-        : typedKey in (edittedObj as any)
-        ? (edittedObj as any)[typedKey]
-        : undefined;
-    const defaultValue =
-      keyTypeRaw === "object"
-        ? getOptionsData(defaultObj[typedKey], currentValue)
-        : currentValue;
-
-    if (!keyType) continue;
-    optionsData.push({
-      key,
-      type: keyType,
-      currentValue: defaultValue,
-      defaultValue,
-    });
-  }
-  return optionsData;
-};
+import useOptionsEditorContext, {
+  OptionData,
+} from "@/contexts/OptionsEditorContext";
+import autoAnimate from "@formkit/auto-animate";
+import { ChevronUpIcon, ClipboardCopyIcon } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import Switch from "react-switch";
 
 const OptionRenderer = ({
   optionData,
@@ -209,10 +15,12 @@ const OptionRenderer = ({
   optionData: OptionData;
   editOption: (keypath: string, value: any) => void;
 }) => {
-  const isPrimitive = optionData.type !== "object";
+  const isPrimitive =
+    optionData.type !== "object" && optionData.currentValue !== undefined;
+  console.log("test", optionData);
   const showProperty =
     !isPrimitive &&
-    (optionData.defaultValue as OptionData[]).find(
+    (optionData.currentValue as OptionData[]).find(
       (item) => item.key === "show"
     );
   const [isExpanded, setExpanded] = useState(
@@ -220,13 +28,10 @@ const OptionRenderer = ({
       ? true
       : false
   );
-  if (!isPrimitive) {
-    console.log(
-      optionData.key,
-      optionData.currentValue,
-      optionData.defaultValue
-    );
-  }
+  const expandedRef = useRef(null);
+  useEffect(() => {
+    expandedRef.current && autoAnimate(expandedRef.current);
+  }, [expandedRef]);
 
   return (
     <>
@@ -238,83 +43,63 @@ const OptionRenderer = ({
         </div>
       ) : (
         <div className="border border-border rounded-lg">
-          <div className="flex items-center py-1 px-2">
+          <div className="flex items-center justify-between p-2">
             <strong>{optionData.key}</strong>
+            <div className="flex items-center gap-1">
+              {showProperty && (
+                <Switch
+                  checked={showProperty.currentValue as boolean}
+                  onChange={(value) => editOption("show", value)}
+                  checkedIcon={false}
+                  onColor="#0077ff"
+                  offColor="#dddddd"
+                  uncheckedIcon={false}
+                  height={22}
+                  width={40}
+                  handleDiameter={16}
+                />
+              )}
+              {!isPrimitive && (
+                <Button
+                  size={"xs"}
+                  variant={"ghost"}
+                  onClick={() => setExpanded((prev) => !prev)}
+                >
+                  <ChevronUpIcon
+                    className={`${
+                      isExpanded ? "" : "rotate-180"
+                    } transition-all`}
+                  />
+                </Button>
+              )}
+            </div>
           </div>
-          {(
-            (optionData.currentValue ?? optionData.defaultValue) as OptionData[]
-          ).map((subOptionData) => {
-            return (
-              <OptionRenderer
-                optionData={subOptionData}
-                editOption={(keypath: string, value: any) => {
-                  editOption(subOptionData.key + "/" + keypath, value);
-                }}
-                key={subOptionData.key}
-              />
-            );
-          })}
+          <div className="px-1 flex flex-col gap-1" ref={expandedRef}>
+            {isExpanded &&
+              (
+                (optionData.currentValue ??
+                  optionData.defaultValue) as OptionData[]
+              ).map((subOptionData) => {
+                if (subOptionData.key === "show") return null;
+                return (
+                  <OptionRenderer
+                    optionData={subOptionData}
+                    editOption={(keypath: string, value: any) => {
+                      editOption(subOptionData.key + "/" + keypath, value);
+                    }}
+                    key={subOptionData.key}
+                  />
+                );
+              })}
+          </div>
         </div>
       )}
     </>
   );
 };
 
-const OptionsEditor = ({
-  options = DEFAULT_OPTIONS,
-}: {
-  options?: ClockOptions;
-}) => {
-  const [edittedOptions, setEdittedOptions] = useState<OptionData[]>(
-    getOptionsData(DEFAULT_OPTIONS, options)
-  );
-  const editOption = (keypath: string, value: any) => {
-    const keys = keypath.split("/");
-    let options = [...edittedOptions];
-
-    let currentLevel = options;
-
-    // Track parent references to modify deeply nested objects
-    const stack: { obj: OptionData; index: number }[] = [];
-
-    // Traverse to the deepest key
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i];
-      const foundIndex = currentLevel.findIndex((option) => option.key === key);
-
-      if (foundIndex === -1) {
-        console.warn(`Key '${key}' not found at depth ${i}`);
-        return; // Exit if keypath is invalid
-      }
-
-      const foundOption = currentLevel[foundIndex];
-
-      // If it's the last key in the path, update the value
-      if (i === keys.length - 1) {
-        currentLevel[foundIndex] = { ...foundOption, currentValue: value };
-      } else {
-        if (!Array.isArray(foundOption.defaultValue)) {
-          console.warn(
-            `Expected an array at key '${key}', but got ${typeof foundOption.currentValue}`
-          );
-          return; // Exit if next level isn't an array
-        }
-        // Store current level to modify later
-        stack.push({ obj: foundOption, index: foundIndex });
-        // Move to the next level
-        currentLevel = [...foundOption.currentValue];
-      }
-    }
-
-    // Apply changes by updating the object at each parent level
-    while (stack.length > 0) {
-      const { obj, index } = stack.pop()!;
-      obj.currentValue[index] = { ...obj };
-    }
-
-    // Only update state if there's an actual change
-    setEdittedOptions(options);
-  };
+const OptionsEditor = ({}: {}) => {
+  const { edittedOptions, editOption } = useOptionsEditorContext();
 
   return (
     <div className="w-full">
@@ -324,7 +109,7 @@ const OptionsEditor = ({
           <ClipboardCopyIcon size={16} />
         </Button>
       </div>
-      <div className="w-full">
+      <div className="w-full px-1 flex flex-col gap-1">
         {edittedOptions.map((optionData) => {
           return (
             <OptionRenderer
