@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { BookmarkIcon, ClipboardCopyIcon, DropletIcon } from "lucide-react";
-import Image from "next/image";
-import { Clock } from "react-custom-clock";
+import { BookmarkIcon, DropletIcon } from "lucide-react";
+import Clock from "react-custom-clock";
+import OptionsEditor from "./OptionsEditor";
 
 export default function Home() {
   return (
@@ -23,12 +22,7 @@ export default function Home() {
           </div>
         </div>
         <div className="border border-border rounded-lg min-w-96 p-2">
-          <div className="title flex items-center justify-between">
-            <h2 className="font-bold text-lg">Options</h2>
-            <Button variant={"outline"} size={"sm"}>
-              <ClipboardCopyIcon size={16} />
-            </Button>
-          </div>
+          <OptionsEditor />
         </div>
       </div>
     </div>
