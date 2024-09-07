@@ -7,6 +7,8 @@ import autoAnimate from "@formkit/auto-animate";
 import { ChevronUpIcon, ClipboardCopyIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import Switch from "react-switch";
+import ColorPicker from "./ColorPicker";
+import { Input } from "@/components/ui/input";
 
 const OptionRenderer = ({
   optionData,
@@ -17,7 +19,6 @@ const OptionRenderer = ({
 }) => {
   const isPrimitive =
     optionData.type !== "object" && optionData.currentValue !== undefined;
-  console.log("test", optionData);
   const showProperty =
     !isPrimitive &&
     (optionData.currentValue as OptionData[]).find(
@@ -33,12 +34,40 @@ const OptionRenderer = ({
     expandedRef.current && autoAnimate(expandedRef.current);
   }, [expandedRef]);
 
+  const optionType = optionData.type;
+
+  //color
+  const [value, setValue] = useState(optionData.currentValue);
+
+  useEffect(() => {
+    setValue(optionData.currentValue);
+  }, [optionData.currentValue]);
+
   return (
     <>
       {isPrimitive ? (
         <div className="">
-          <div className="flex items-center py-1 px-2">
+          <div className="flex items-center justify-between py-1 px-2">
             <span>{optionData.key}</span>
+            {optionData.type === "color" && (
+              <div className="flex items-center gap-1">
+                <ColorPicker
+                  value={value}
+                  afterChange={(val) => editOption("", val)}
+                />
+                <span>{value}</span>
+              </div>
+            )}
+            {optionData.type === "number" && (
+              <div className="flex items-center gap-1">
+                <Input
+                  className="w-20"
+                  type="number"
+                  value={value}
+                  onChange={(evt) => editOption("", parseInt(evt.target.value))}
+                />
+              </div>
+            )}
           </div>
         </div>
       ) : (

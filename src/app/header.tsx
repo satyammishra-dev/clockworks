@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
 import React from "react";
-import { Icon } from "@iconify/react";
 
 const Header = () => {
   return (

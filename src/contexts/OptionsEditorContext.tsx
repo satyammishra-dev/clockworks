@@ -244,7 +244,13 @@ export const OptionsEditorContextProvider = ({
     useState<ClockOptions>(DEFAULT_OPTIONS);
 
   const editOption = (keypath: string, value: any) => {
+    console.log("called", keypath, value);
     const keys = keypath.split("/");
+    while (keys[keys.length - 1] === "") {
+      keys.pop();
+    }
+
+    console.log(keys);
 
     const updateValue = (
       options: OptionData[],
