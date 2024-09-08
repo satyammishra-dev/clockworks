@@ -1,4 +1,5 @@
 import React from "react";
+import GithubStarButton from "@/components/GithubStarButton";
 
 const Header = () => {
   return (
@@ -7,7 +8,18 @@ const Header = () => {
         <div className="h-full flex items-center">
           <span className="font-bold text-lg">Clockworks</span>
         </div>
-        <div className="flex items-center h-full"></div>
+        <div className="flex items-center h-full">
+          {/* <GitHubButton
+            href="https://github.com/satyam-mishra-pce/react-custom-clock"
+            data-color-scheme="no-preference: light; light: light; dark: dark;"
+            data-size="large"
+            data-show-count="true"
+            aria-label="Star satyam-mishra-pce/react-custom-clock on GitHub"
+          >
+            Star
+          </GitHubButton> */}
+          <GithubStarButton />
+        </div>
       </div>
     </header>
   );
