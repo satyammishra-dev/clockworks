@@ -34,8 +34,6 @@ const OptionRenderer = ({
     expandedRef.current && autoAnimate(expandedRef.current);
   }, [expandedRef]);
 
-  const optionType = optionData.type;
-
   //color
   const [value, setValue] = useState(optionData.currentValue);
 
@@ -127,7 +125,7 @@ const OptionRenderer = ({
   );
 };
 
-const OptionsEditor = ({}: {}) => {
+const OptionsEditor = () => {
   const { edittedOptions, editOption } = useOptionsEditorContext();
 
   return (
