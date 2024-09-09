@@ -24,15 +24,19 @@ const OptionRenderer = ({
     (optionData.currentValue as OptionData[]).find(
       (item) => item.key === "show"
     );
-  const [isExpanded, setExpanded] = useState(
-    showProperty && (showProperty.currentValue as boolean | undefined)
-      ? true
-      : false
-  );
+  const [isExpanded, setExpanded] = useState(false);
   const expandedRef = useRef(null);
+  const switchRef = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     expandedRef.current && autoAnimate(expandedRef.current);
   }, [expandedRef]);
+
+  useEffect(() => {
+    if (!showProperty) return;
+    if (showProperty.currentValue === false) {
+      setExpanded(showProperty.currentValue);
+    }
+  }, [showProperty]);
 
   //color
   const [value, setValue] = useState(optionData.currentValue);
@@ -52,14 +56,21 @@ const OptionRenderer = ({
                 <ColorPicker
                   value={value}
                   afterChange={(val) => editOption("", val)}
-                />
+                >
+                  <button
+                    style={{
+                      background: value,
+                    }}
+                    className="h-6 w-8 border border-border rounded-md"
+                  ></button>
+                </ColorPicker>
                 <span>{value}</span>
               </div>
             )}
             {optionData.type === "number" && (
               <div className="flex items-center gap-1">
                 <Input
-                  className="w-20"
+                  className="w-20 h-8"
                   type="number"
                   value={value}
                   onChange={(evt) => editOption("", parseInt(evt.target.value))}
@@ -69,39 +80,57 @@ const OptionRenderer = ({
           </div>
         </div>
       ) : (
-        <div className="border border-border rounded-lg">
+        <div
+          className={`border border-border rounded-lg ${
+            isExpanded ? "" : "hover:bg-slate-50"
+          }`}
+          onClick={(evt) => {
+            if (
+              switchRef.current &&
+              evt.currentTarget.contains(switchRef.current)
+            )
+              return;
+            if (showProperty && showProperty.currentValue === false) return;
+            if (!isExpanded) setExpanded(true);
+          }}
+        >
           <div className="flex items-center justify-between p-2">
             <strong>{optionData.key}</strong>
             <div className="flex items-center gap-1">
               {showProperty && (
-                <Switch
-                  checked={showProperty.currentValue as boolean}
-                  onChange={(value) => editOption("show", value)}
-                  checkedIcon={false}
-                  onColor="#0077ff"
-                  offColor="#dddddd"
-                  uncheckedIcon={false}
-                  height={22}
-                  width={40}
-                  handleDiameter={16}
-                />
-              )}
-              {!isPrimitive && (
-                <Button
-                  size={"xs"}
-                  variant={"ghost"}
-                  onClick={() => setExpanded((prev) => !prev)}
-                >
-                  <ChevronUpIcon
-                    className={`${
-                      isExpanded ? "" : "rotate-180"
-                    } transition-all`}
+                <span ref={switchRef} className="flex items-center">
+                  <Switch
+                    checked={showProperty.currentValue as boolean}
+                    onChange={(value) => editOption("show", value)}
+                    checkedIcon={false}
+                    onColor="#0077ff"
+                    offColor="#dddddd"
+                    uncheckedIcon={false}
+                    height={22}
+                    width={40}
+                    handleDiameter={16}
                   />
-                </Button>
+                </span>
               )}
+              <Button
+                size={"xs"}
+                variant={"ghost"}
+                onClick={() => setExpanded((prev) => !prev)}
+                disabled={
+                  showProperty ? showProperty.currentValue === false : false
+                }
+              >
+                <ChevronUpIcon
+                  className={`${isExpanded ? "" : "rotate-180"} transition-all`}
+                  size={16}
+                />
+              </Button>
             </div>
           </div>
-          <div className="px-1 flex flex-col gap-1" ref={expandedRef}>
+          <div
+            className={`px-1 ${isExpanded ? "py-1" : ""} flex flex-col gap-1`}
+            ref={expandedRef}
+          >
             {isExpanded &&
               (
                 (optionData.currentValue ??
@@ -130,7 +159,7 @@ const OptionsEditor = () => {
 
   return (
     <div className="w-full">
-      <div className="title flex items-center justify-between">
+      <div className="flex items-center justify-between mb-2">
         <h2 className="font-bold text-lg">Options</h2>
         <Button variant={"outline"} size={"sm"}>
           <ClipboardCopyIcon size={16} />

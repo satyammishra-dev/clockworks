@@ -1,11 +1,21 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { cssColorToRgba } from "@/lib/utils";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { ClockOptions } from "react-custom-clock";
+
+export type RGBAColorString =
+  `rgba(${number}, ${number}, ${number}, ${number})`;
+
+export type ClockViewConfig = {
+  backdrop: RGBAColorString;
+};
 
 type OptionsEditorContextType = {
   edittedOptions: OptionData[];
   editOption: (keyPath: string, value: any) => void;
   initializeEdittedOptions: (options?: ClockOptions) => void;
+  clockViewConfig: ClockViewConfig;
+  setClockViewConfig: React.Dispatch<React.SetStateAction<ClockViewConfig>>;
   compiledOptions: ClockOptions;
 };
 
@@ -150,16 +160,57 @@ const DEFAULT_OPTIONS = {
 
 export type OptionData = {
   key: string;
-  type:
-    | "boolean"
-    | "number"
-    | "color"
-    | "undefined"
-    | "show"
-    | "string"
-    | "object";
+  type: "boolean" | "number" | "color" | "show" | "string" | "object";
   currentValue: any;
   defaultValue: any;
+};
+
+const rectifyCurrentValue = <
+  T extends undefined | number | string | boolean | OptionData[]
+>(
+  keyType: OptionData["type"],
+  value: any,
+  defaultValue?: T
+): undefined | number | string | boolean | object | T => {
+  if (keyType === "boolean") {
+    if (typeof value === "boolean") {
+      return value;
+    }
+    return defaultValue ?? true;
+  }
+  if (keyType === "color") {
+    if (typeof value === "string") {
+      return cssColorToRgba(value);
+    }
+    return defaultValue
+      ? cssColorToRgba(defaultValue as string)
+      : "rgba(0, 0, 0, 0)";
+  }
+  if (keyType === "number") {
+    if (typeof value === "number") {
+      return value;
+    }
+    return defaultValue ?? 0;
+  }
+  if (keyType === "show") {
+    if (typeof value === "boolean") {
+      return value;
+    }
+    return defaultValue ?? true;
+  }
+  if (keyType === "string") {
+    if (typeof value === "string") {
+      return value;
+    }
+    return defaultValue ?? "";
+  }
+  if (keyType === "object") {
+    if (typeof value === "object") {
+      return value;
+    }
+    return defaultValue ?? new Object();
+  }
+  return defaultValue ?? undefined;
 };
 
 const getOptionsData = (defaultObj: any, edittedObj: object | undefined) => {
@@ -195,17 +246,26 @@ const getOptionsData = (defaultObj: any, edittedObj: object | undefined) => {
         : typedKey in (edittedObj as any)
         ? (edittedObj as any)[typedKey]
         : undefined;
-    const defaultValue =
-      keyTypeRaw === "object"
-        ? getOptionsData(defaultObj[typedKey], currentValue)
-        : currentValue;
+    if (keyType === null) continue;
+    const rectifiedCurrentValue = rectifyCurrentValue(
+      keyType,
+      currentValue,
+      defaultObj[typedKey]
+    );
+    const resolvedCurrentValue =
+      keyType === "object"
+        ? getOptionsData(defaultObj[typedKey], rectifiedCurrentValue)
+        : rectifiedCurrentValue;
+    const resolvedDefaultValue =
+      keyType === "object"
+        ? getOptionsData(defaultObj[typedKey], defaultObj[typedKey])
+        : defaultObj[typedKey];
 
-    if (!keyType) continue;
     optionsData.push({
       key,
       type: keyType,
-      currentValue: defaultValue,
-      defaultValue,
+      currentValue: resolvedCurrentValue,
+      defaultValue: resolvedDefaultValue,
     });
   }
   return optionsData;
@@ -231,7 +291,6 @@ const compileOptionsData = (optionsData: OptionData[]) => {
 };
 
 const defaultOptionsData = getOptionsData(DEFAULT_OPTIONS, DEFAULT_OPTIONS);
-console.log("test def", defaultOptionsData);
 
 export const OptionsEditorContextProvider = ({
   children,
@@ -242,15 +301,15 @@ export const OptionsEditorContextProvider = ({
     useState<OptionData[]>(defaultOptionsData);
   const [compiledOptions, setCompiledOptions] =
     useState<ClockOptions>(DEFAULT_OPTIONS);
+  const [clockViewConfig, setClockViewConfig] = useState<ClockViewConfig>({
+    backdrop: "rgba(0, 0, 0, 0.05)",
+  });
 
   const editOption = (keypath: string, value: any) => {
-    console.log("called", keypath, value);
     const keys = keypath.split("/");
     while (keys[keys.length - 1] === "") {
       keys.pop();
     }
-
-    console.log(keys);
 
     const updateValue = (
       options: OptionData[],
@@ -283,7 +342,7 @@ export const OptionsEditorContextProvider = ({
       });
     };
     const newOptions = updateValue(edittedOptions, keys, value);
-    console.log("test", newOptions);
+    console.log("options", newOptions);
     setEdittedOptions(newOptions);
   };
 
@@ -305,6 +364,8 @@ export const OptionsEditorContextProvider = ({
         editOption,
         initializeEdittedOptions,
         compiledOptions,
+        clockViewConfig,
+        setClockViewConfig,
       }}
     >
       {children}
