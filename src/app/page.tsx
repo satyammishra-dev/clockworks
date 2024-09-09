@@ -20,7 +20,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="border border-none md:border-border rounded-lg min-w-96 p-0 md:p-2 w-full md:w-auto">
+          <div className="rounded-lg md:min-w-96 p-0 md:p-2 w-full md:w-auto">
             <OptionsEditor />
           </div>
         </div>
