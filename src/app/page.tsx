@@ -7,8 +7,8 @@ export default function Home() {
   return (
     <OptionsEditorContextProvider>
       <div className="w-full max-w-6xl p-4">
-        <div className="w-full flex items-start gap-2">
-          <div className="flex-1 flex flex-col gap-3 sticky top-16">
+        <div className="w-full flex flex-col md:flex-row items-start gap-10 md:gap-2">
+          <div className="w-full flex-1 flex flex-col gap-3 md:sticky static top-16">
             <ClockView />
             <div>
               <h2 className="font-bold text-lg flex items-center gap-2">
@@ -20,7 +20,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="border border-border rounded-lg min-w-96 p-2">
+          <div className="border border-none md:border-border rounded-lg min-w-96 p-0 md:p-2 w-full md:w-auto">
             <OptionsEditor />
           </div>
         </div>

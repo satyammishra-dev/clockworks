@@ -8,6 +8,10 @@ export type RGBAColorString =
 
 export type ClockViewConfig = {
   backdrop: RGBAColorString;
+  zoom: {
+    amount: number;
+    isAutomatic: boolean;
+  };
 };
 
 type OptionsEditorContextType = {
@@ -290,19 +294,20 @@ const compileOptionsData = (optionsData: OptionData[]) => {
   return options;
 };
 
-const defaultOptionsData = getOptionsData(DEFAULT_OPTIONS, DEFAULT_OPTIONS);
-
 export const OptionsEditorContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const [edittedOptions, setEdittedOptions] =
-    useState<OptionData[]>(defaultOptionsData);
+  const [edittedOptions, setEdittedOptions] = useState<OptionData[]>([]);
   const [compiledOptions, setCompiledOptions] =
     useState<ClockOptions>(DEFAULT_OPTIONS);
   const [clockViewConfig, setClockViewConfig] = useState<ClockViewConfig>({
     backdrop: "rgba(0, 0, 0, 0.05)",
+    zoom: {
+      isAutomatic: true,
+      amount: 100,
+    },
   });
 
   const editOption = (keypath: string, value: any) => {
@@ -347,15 +352,20 @@ export const OptionsEditorContextProvider = ({
   };
 
   const initializeEdittedOptions = (options?: ClockOptions) => {
-    const optionsData = options
-      ? getOptionsData(DEFAULT_OPTIONS, options)
-      : defaultOptionsData;
+    const optionsData = getOptionsData(
+      DEFAULT_OPTIONS,
+      options ?? DEFAULT_OPTIONS
+    );
     setEdittedOptions(optionsData);
   };
 
   useEffect(() => {
     setCompiledOptions(compileOptionsData(edittedOptions));
   }, [edittedOptions]);
+
+  useEffect(() => {
+    initializeEdittedOptions(DEFAULT_OPTIONS);
+  }, []);
 
   return (
     <OptionsEditorContext.Provider
