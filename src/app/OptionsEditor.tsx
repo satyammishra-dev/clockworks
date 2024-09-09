@@ -4,12 +4,15 @@ import useOptionsEditorContext, {
   OptionData,
 } from "@/contexts/OptionsEditorContext";
 import autoAnimate from "@formkit/auto-animate";
-import { ChevronUpIcon, ClipboardCopyIcon } from "lucide-react";
+import { ChevronUpIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import Switch from "react-switch";
 import ColorPicker from "./ColorPicker";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import ModernTooltip, {
+  TooltipDirections,
+} from "@/components/ui/modern-tooltip";
 
 const OptionRenderer = ({
   optionData,
@@ -156,7 +159,22 @@ const OptionRenderer = ({
 };
 
 const OptionsEditor = () => {
-  const { edittedOptions, editOption } = useOptionsEditorContext();
+  const { edittedOptions, editOption, compiledOptions } =
+    useOptionsEditorContext();
+  const [isCopied, setCopied] = useState(false);
+
+  const copyCompiledOptions = () => {
+    if (isCopied) return;
+    navigator.clipboard.writeText(JSON.stringify(compiledOptions));
+    setCopied(true);
+  };
+
+  useEffect(() => {
+    if (!isCopied) return;
+    setTimeout(() => {
+      setCopied(false);
+    }, 1000);
+  }, [isCopied]);
 
   return (
     <div className="w-full">
@@ -165,9 +183,23 @@ const OptionsEditor = () => {
           <Icon icon={"iconamoon:options"} fontSize={20} />
           <span>Options</span>
         </h2>
-        <Button variant={"outline"} size={"sm"}>
-          <ClipboardCopyIcon size={16} />
-        </Button>
+        <ModernTooltip
+          tooltipDirection={TooltipDirections.LEFT}
+          tooltipContent={isCopied ? "Copied" : "Copy"}
+        >
+          <Button
+            variant={"outline"}
+            size={"sm"}
+            disabled={isCopied}
+            onClick={copyCompiledOptions}
+          >
+            {isCopied ? (
+              <Icon icon={"mdi:clipboard-tick"} fontSize={16} />
+            ) : (
+              <Icon icon={"lucide:clipboard-copy"} fontSize={16} />
+            )}
+          </Button>
+        </ModernTooltip>
       </div>
       <div className="w-full px-1 flex flex-col gap-1">
         {edittedOptions.map((optionData) => {
