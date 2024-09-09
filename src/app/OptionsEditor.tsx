@@ -9,6 +9,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Switch from "react-switch";
 import ColorPicker from "./ColorPicker";
 import { Input } from "@/components/ui/input";
+import { Icon } from "@iconify/react/dist/iconify.js";
 
 const OptionRenderer = ({
   optionData,
@@ -160,7 +161,10 @@ const OptionsEditor = () => {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="font-bold text-lg">Options</h2>
+        <h2 className="font-bold text-lg flex items-center gap-2">
+          <Icon icon={"iconamoon:options"} fontSize={20} />
+          <span>Options</span>
+        </h2>
         <Button variant={"outline"} size={"sm"}>
           <ClipboardCopyIcon size={16} />
         </Button>

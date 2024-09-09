@@ -8,6 +8,10 @@ export type RGBAColorString =
 
 export type ClockViewConfig = {
   backdrop: RGBAColorString;
+  zoom: {
+    amount: number;
+    isAutomatic: boolean;
+  };
 };
 
 type OptionsEditorContextType = {
@@ -303,6 +307,10 @@ export const OptionsEditorContextProvider = ({
     useState<ClockOptions>(DEFAULT_OPTIONS);
   const [clockViewConfig, setClockViewConfig] = useState<ClockViewConfig>({
     backdrop: "rgba(0, 0, 0, 0.05)",
+    zoom: {
+      isAutomatic: true,
+      amount: 100,
+    },
   });
 
   const editOption = (keypath: string, value: any) => {
