@@ -9,15 +9,6 @@ const Header = () => {
           <span className="font-bold text-lg">Clockworks</span>
         </div>
         <div className="flex items-center h-full">
-          {/* <GitHubButton
-            href="https://github.com/satyam-mishra-pce/react-custom-clock"
-            data-color-scheme="no-preference: light; light: light; dark: dark;"
-            data-size="large"
-            data-show-count="true"
-            aria-label="Star satyam-mishra-pce/react-custom-clock on GitHub"
-          >
-            Star
-          </GitHubButton> */}
           <GithubStarButton />
         </div>
       </div>
