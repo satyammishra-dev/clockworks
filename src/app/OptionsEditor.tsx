@@ -186,6 +186,7 @@ const OptionsEditor = () => {
         <ModernTooltip
           tooltipDirection={TooltipDirections.LEFT}
           tooltipContent={isCopied ? "Copied" : "Copy"}
+          style={{ zIndex: 10 }}
         >
           <Button
             variant={"outline"}

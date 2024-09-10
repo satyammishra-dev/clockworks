@@ -1,14 +1,18 @@
 import React from "react";
 import GithubStarButton from "@/components/GithubStarButton";
+import Navbar from "./Navbar";
 
 const Header = () => {
   return (
     <header className="fixed top-0 left-0 right-0 flex items-center justify-center bg-background/80 backdrop-blur-md shadow-sm px-2 h-12 border-b border-b-border z-50">
       <div className="w-full h-full max-w-6xl flex items-center justify-between">
         <div className="h-full flex items-center">
-          <span className="font-bold text-lg">Clockworks</span>
+          <a className="font-bold text-lg" href="/">
+            Clockworks
+          </a>
         </div>
-        <div className="flex items-center h-full">
+        <div className="flex items-center gap-2 h-full">
+          <Navbar />
           <GithubStarButton />
         </div>
       </div>
