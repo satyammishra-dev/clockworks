@@ -38,3 +38,11 @@ export function cssColorToRgba(
   // Fallback if the color is not recognized
   return `rgba(0, 0, 0, 0)`;
 }
+
+export const generateUniqueId = () => {
+  return `${Math.floor(Math.random() * (9e12 - 1)) + 1e12}`;
+};
+
+export const wait = async (milliseconds: number) => {
+  return new Promise((res) => setTimeout(res, milliseconds));
+};

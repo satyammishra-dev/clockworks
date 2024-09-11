@@ -17,7 +17,7 @@ export type ClockViewConfig = {
 type OptionsEditorContextType = {
   edittedOptions: OptionData[];
   editOption: (keyPath: string, value: any) => void;
-  initializeEdittedOptions: (options?: ClockOptions) => void;
+  initializeEdittedOptions: (options?: ClockOptions | OptionData[]) => void;
   clockViewConfig: ClockViewConfig;
   setClockViewConfig: React.Dispatch<React.SetStateAction<ClockViewConfig>>;
   compiledOptions: ClockOptions;
@@ -351,7 +351,11 @@ export const OptionsEditorContextProvider = ({
     setEdittedOptions(newOptions);
   };
 
-  const initializeEdittedOptions = (options?: ClockOptions) => {
+  const initializeEdittedOptions = (options?: ClockOptions | OptionData[]) => {
+    if (options && Array.isArray(options)) {
+      setEdittedOptions(options);
+      return;
+    }
     const optionsData = getOptionsData(
       DEFAULT_OPTIONS,
       options ?? DEFAULT_OPTIONS

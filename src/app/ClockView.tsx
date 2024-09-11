@@ -7,6 +7,8 @@ import React, { useEffect, useRef, useState } from "react";
 import Clock from "react-custom-clock";
 import ColorPicker from "./ColorPicker";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import useClockScreenshotContext from "@/contexts/ClockScreenshotContext";
+
 const FALLBACK_CLOCK_SIZE = 400;
 const ZOOM_INTERVAL = 10;
 
@@ -23,7 +25,9 @@ const ClockView = () => {
     clockViewConfig.zoom.isAutomatic
   );
   const [showZoomAmount, setShowZoomAmount] = useState(false);
+  const { setScreenshotTarget } = useClockScreenshotContext();
   const thisRef = useRef<HTMLDivElement>(null);
+  const clockWrapperRef = useRef<HTMLDivElement>(null);
 
   const calcAutomaticZoomAmount = (
     clockSize: number,
@@ -107,6 +111,11 @@ const ClockView = () => {
     }));
   }, [isZoomAutomatic, zoomAmount]);
 
+  // Update the screenshot target for each clock wrapper ref change:
+  useEffect(() => {
+    setScreenshotTarget(clockWrapperRef);
+  }, [clockWrapperRef]);
+
   return (
     <div
       className="w-full px-2 py-8 border border-border/50 rounded-lg relative overflow-hidden"
@@ -116,7 +125,10 @@ const ClockView = () => {
       }}
       ref={thisRef}
     >
-      <div className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-0">
+      <div
+        className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-0"
+        ref={clockWrapperRef}
+      >
         <Clock
           options={compiledOptions}
           style={{
