@@ -38,10 +38,12 @@ type ModernTooltipProps = {
   delayInMs?: number;
   children: React.ReactNode;
   tooltipContent: React.ReactNode;
+  tooltipWidth?: number;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 const ModernTooltip = ({
   tooltipDirection = TooltipDirections.TOP,
+  tooltipWidth,
   children,
   tooltipContent,
   ...props
@@ -50,14 +52,17 @@ const ModernTooltip = ({
     <div
       {...props}
       className={`relative ${props.className} group tooltip-parent`}
-      style={{ zIndex: 10000000 }}
+      style={{ zIndex: 100, ...(props.style ?? {}) }}
     >
       {children}
 
       <div
         className={`tooltip absolute bg-background border border-border rounded-xl shadow-md pointer-events-none transition duration-300 opacity-0 lll group-hover:opacity-100 scale-[0.1] lll group-hover:scale-100 ${tooltipDirection.tooltipClass}`}
       >
-        <div className="tooltip-inner relative flex flex-col items-center justify-center py-[6px] px-[10px] text-foreground text-sm">
+        <div
+          className="tooltip-inner relative flex flex-col items-center justify-center py-[6px] px-[10px] text-foreground text-sm"
+          style={{ width: tooltipWidth ? `${tooltipWidth}px` : "" }}
+        >
           {tooltipContent}
           <div
             className={`tooltip-corner absolute h-[14px] w-[14px] border border-border bg-background border-r-0 border-b-0 rounded-tl-md ${tooltipDirection.tooltipCornerClass}`}
