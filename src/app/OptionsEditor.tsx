@@ -92,13 +92,14 @@ const OptionRenderer = ({
             isExpanded ? "" : "hover:bg-slate-50"
           }`}
           onClick={(evt) => {
+            if (isExpanded) return;
             if (
               switchRef.current &&
-              evt.currentTarget.contains(switchRef.current)
+              switchRef.current.contains(evt.target as Node)
             )
               return;
             if (showProperty && showProperty.currentValue === false) return;
-            if (!isExpanded) setExpanded(true);
+            setExpanded(true);
           }}
         >
           <div className="flex items-center justify-between p-2">
