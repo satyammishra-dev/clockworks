@@ -13,6 +13,9 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import ModernTooltip, {
   TooltipDirections,
 } from "@/components/ui/modern-tooltip";
+import useSavedClockStorageContext from "@/contexts/SavedClockStorageContext";
+import { generateUniqueId } from "@/lib/utils";
+import useClockScreenshotContext from "@/contexts/ClockScreenshotContext";
 
 const OptionRenderer = ({
   optionData,
@@ -89,13 +92,14 @@ const OptionRenderer = ({
             isExpanded ? "" : "hover:bg-slate-50"
           }`}
           onClick={(evt) => {
+            if (isExpanded) return;
             if (
               switchRef.current &&
-              evt.currentTarget.contains(switchRef.current)
+              switchRef.current.contains(evt.target as Node)
             )
               return;
             if (showProperty && showProperty.currentValue === false) return;
-            if (!isExpanded) setExpanded(true);
+            setExpanded(true);
           }}
         >
           <div className="flex items-center justify-between p-2">
@@ -159,9 +163,51 @@ const OptionRenderer = ({
 };
 
 const OptionsEditor = () => {
-  const { edittedOptions, editOption, compiledOptions } =
+  const { edittedOptions, editOption, compiledOptions, clockViewConfig } =
     useOptionsEditorContext();
+  const { saveClock } = useSavedClockStorageContext();
+  const { takeScreenshot } = useClockScreenshotContext();
+
   const [isCopied, setCopied] = useState(false);
+
+  const [saveMode, setSaveMode] = useState<
+    "IDLE" | "SAVING" | "ERROR" | "SAVED"
+  >("IDLE");
+
+  const saveClockOptions = async () => {
+    setSaveMode("SAVING");
+    const imageData = await takeScreenshot();
+    if (!imageData) {
+      setSaveMode("ERROR");
+      setTimeout(() => {
+        setSaveMode("IDLE");
+      }, 2000);
+      return;
+    }
+    try {
+      saveClock({
+        metadata: {
+          id: generateUniqueId(),
+          rccVersion: "1.0.9",
+        },
+        presentation: {
+          backdrop: clockViewConfig.backdrop,
+          name: "Clock",
+          thumbnail: imageData,
+        },
+        data: edittedOptions,
+      });
+    } catch {
+      setSaveMode("ERROR");
+      setTimeout(() => {
+        setSaveMode("IDLE");
+      }, 2000);
+    }
+    setSaveMode("SAVED");
+    setTimeout(() => {
+      setSaveMode("IDLE");
+    }, 2000);
+  };
 
   const copyCompiledOptions = () => {
     if (isCopied) return;
@@ -183,26 +229,62 @@ const OptionsEditor = () => {
           <Icon icon={"iconamoon:options"} fontSize={20} />
           <span>Options</span>
         </h2>
-        <ModernTooltip
-          tooltipDirection={TooltipDirections.LEFT}
-          tooltipContent={isCopied ? "Copied" : "Copy"}
-          style={{ zIndex: 10 }}
-        >
-          <Button
-            variant={"outline"}
-            size={"sm"}
-            disabled={isCopied}
-            onClick={copyCompiledOptions}
+        <div className="flex items-center gap-2">
+          <ModernTooltip
+            tooltipDirection={TooltipDirections.BOTTOM}
+            tooltipContent={
+              saveMode === "IDLE"
+                ? "Save"
+                : saveMode === "SAVING"
+                ? "Saving..."
+                : saveMode === "ERROR"
+                ? "Error"
+                : "Saved"
+            }
+            style={{ zIndex: 10 }}
           >
-            {isCopied ? (
-              <Icon icon={"mdi:clipboard-tick"} fontSize={16} />
-            ) : (
-              <Icon icon={"lucide:clipboard-copy"} fontSize={16} />
-            )}
-          </Button>
-        </ModernTooltip>
+            <Button
+              variant={"ghost"}
+              size={"sm"}
+              disabled={saveMode !== "IDLE"}
+              onClick={() => saveClockOptions()}
+            >
+              {saveMode === "SAVING" ? (
+                <Icon
+                  icon={"lucide:loader-circle"}
+                  fontSize={16}
+                  className="animate-spin"
+                />
+              ) : saveMode === "SAVED" ? (
+                <Icon icon={"lucide:bookmark-check"} fontSize={16} />
+              ) : saveMode === "ERROR" ? (
+                <Icon icon={"lucide:bookmark-x"} fontSize={16} />
+              ) : (
+                <Icon icon={"lucide:bookmark-plus"} fontSize={16} />
+              )}
+            </Button>
+          </ModernTooltip>
+          <ModernTooltip
+            tooltipDirection={TooltipDirections.BOTTOM}
+            tooltipContent={isCopied ? "Copied" : "Copy"}
+            style={{ zIndex: 10 }}
+          >
+            <Button
+              variant={"ghost"}
+              size={"sm"}
+              disabled={isCopied}
+              onClick={copyCompiledOptions}
+            >
+              {isCopied ? (
+                <Icon icon={"lucide:copy-check"} fontSize={16} />
+              ) : (
+                <Icon icon={"lucide:copy"} fontSize={16} />
+              )}
+            </Button>
+          </ModernTooltip>
+        </div>
       </div>
-      <div className="w-full px-1 flex flex-col gap-1">
+      <div className="w-full mt-2 px-1 flex flex-col gap-1">
         {edittedOptions.map((optionData) => {
           return (
             <OptionRenderer
