@@ -1,8 +1,8 @@
 import React from "react";
-import GithubStarButton from "@/components/GithubStarButton";
 import Navbar from "./Navbar";
+import SessionPoviderWrapper from "./SessionPoviderWrapper";
 
-const Header = () => {
+const Header = async () => {
   return (
     <header className="fixed top-0 left-0 right-0 flex items-center justify-center bg-background/80 backdrop-blur-md shadow-sm px-2 h-12 border-b border-b-border z-50">
       <div className="w-full h-full max-w-6xl flex items-center justify-between">
@@ -13,7 +13,7 @@ const Header = () => {
         </div>
         <div className="flex items-center gap-2 h-full">
           <Navbar />
-          <GithubStarButton />
+          <SessionPoviderWrapper />
         </div>
       </div>
     </header>
