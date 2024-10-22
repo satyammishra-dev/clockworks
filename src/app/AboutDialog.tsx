@@ -133,6 +133,17 @@ const AboutDialog = ({
                   />
                 </a>
               </ModernTooltip>
+              <ModernTooltip tooltipContent="Rohandeep" tooltipWidth={120}>
+                <a href="https://github.com/codehamsters" target="_blank">
+                  <Image
+                    src={"https://avatars.githubusercontent.com/u/68540937?v=4"}
+                    alt="rohandeep"
+                    height={32}
+                    width={32}
+                    className="rounded-full box-content border-1 border-transparent hover:border-blue-500 hover:scale-[120%] hover:shadow-xl transition duration-500"
+                  />
+                </a>
+              </ModernTooltip>
             </div>
           </li>
         </ul>
